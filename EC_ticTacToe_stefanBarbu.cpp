@@ -117,27 +117,21 @@ public:
     }
     void promptPlayer()
     {
-        int sel{0};
+        promptInput(players[0]);
+        displayBoard();
+        determineWinHelper();
 
-        while (true)
-        {
-            std::cout << "Select Player (1/2): ";
-            std::cin >> sel;
-
-            if (sel > 2 || sel <= 0)
-            {
-                std::cout << "Please enter a valid input!\n";
-            }
-            else
-            {
-                break;
-            }
+        if (gameOver){
+            return;
         }
 
-        promptInput(players[sel - 1]);
-        sel = (sel == 1) ? 1 : 0; // this will need to be amended if more than two players should play which would make sense on larger boards
+        promptInput(players[1]);
         displayBoard();
-        promptInput(players[sel]);
+        determineWinHelper();
+
+        if (gameOver){
+            return;
+        }
     }
     void promptInput(Player _player)
     {
@@ -146,11 +140,11 @@ public:
         {
             if (_player.getMarker() == 'X')
             {
-                std::cout << "Player 1, Please Select Square: ";
+                std::cout << "Player 1, Select Square: ";
             }
             else
             {
-                std::cout << "Player 2, Please Select Square: ";
+                std::cout << "Player 2, Select Square: ";
             }
             std::cin >> square;
 
@@ -172,17 +166,6 @@ public:
                     boardMap[coords[0]][coords[1]] = 2;
                 }
 
-                // marker is placed, determine if _player wins
-                if (determineWin() == 1)
-                {
-                    std::cout << "Player 1 wins!\n"; // TESTING ONLY
-                    gameOver = true;
-                }
-                else if (determineWin() == 2){
-                    std::cout << "Player 2 wins!\n";
-                    gameOver = true;
-                }
-
                 break;
             }
         }
@@ -190,15 +173,15 @@ public:
     std::vector<int> convertNumToCoord(int numSelected)
     {
         // determine x & y dimensions of boardMap
-        int xMax{boardMap[0].size()};
-        int yMax{boardMap.size()};
+        int xMax{static_cast<int>(boardMap[0].size())};
+        int yMax{static_cast<int>(boardMap.size())};
         int max{xMax * yMax};
 
         int x{0};
         int y{0};
 
-        float yCalc{numSelected / yMax};
-        float yCalcRem{numSelected % yMax};
+        float yCalc{static_cast<float>(numSelected / yMax)};
+        float yCalcRem{static_cast<float>(numSelected % yMax)};
 
         if (yCalcRem == 0)
         { // if whole num
@@ -219,10 +202,23 @@ public:
         return returnVector;
     }
     // win calculation function(s)
+    void determineWinHelper()
+    {
+        if (determineWin() == 1)
+        {
+            std::cout << "Player 1 wins!\n";
+            gameOver = true;
+        }
+        else if (determineWin() == 2)
+        {
+            std::cout << "Player 2 wins!\n";
+            gameOver = true;
+        }
+    }
     int determineWin()
     {
-        int maxCols{boardMap[0].size()};
-        int maxRows{boardMap.size()};
+        int maxCols{static_cast<int>(boardMap[0].size())};
+        int maxRows{static_cast<int>(boardMap.size())};
 
         char marker;
 
@@ -232,16 +228,16 @@ public:
             {
                 if (boardMap[row][col] != 0) // if there is a marker
                 {
-                    marker = boardMap[row][col] == 1 ? 'X' : 'O';  // for matching with what player wins, may need to check later
+                    marker = boardMap[row][col] == 1 ? 'X' : 'O'; // for matching with what player wins, may need to check later
 
-                    int returnValue {marker == 'X' ? 1 : 2};
+                    int returnValue{marker == 'X' ? 1 : 2};
 
                     // check diagonals
                     if (row == 0 && col == 0) // top left corner
                     {
                         for (int i{0}; i < maxCols; i++)
                         {
-                            if (boardMap[row][col] != boardMap[i][i])  // if any spot does not have a mark, there can't be a win
+                            if (boardMap[row][col] != boardMap[i][i]) // if any spot does not have a mark, there can't be a win
                             {
                                 break;
                             }
@@ -269,30 +265,38 @@ public:
                     }
 
                     // check horizontals using left edge of board to start
-                    if (((row == 0) && (col == 0)) || ((row == 1) && (col == 0)) || ((row == 2) && (col == 0))){
-                        for (int i {0}; i < maxCols; i++){
-                            if (boardMap[row][col] != boardMap[row][i]){
+                    if (((row == 0) && (col == 0)) || ((row == 1) && (col == 0)) || ((row == 2) && (col == 0)))
+                    {
+                        for (int i{0}; i < maxCols; i++)
+                        {
+                            if (boardMap[row][col] != boardMap[row][i])
+                            {
                                 break;
                             }
 
-                            if (i == maxCols - 1){
-                                returnValue;
+                            if (i == maxCols - 1)
+                            {
+                                return returnValue;
                             }
                         }
                     }
 
                     // check verticals using top edge of board to start
-                    if (((row == 0) && (col == 0)) || ((row == 0) && (col == 1)) || ((row == 0) && (col == 2))){
-                        for (int i {0}; i < maxCols; i++){
-                            if (boardMap[row][col] != boardMap[i][col]){
+                    if (((row == 0) && (col == 0)) || ((row == 0) && (col == 1)) || ((row == 0) && (col == 2)))
+                    {
+                        for (int i{0}; i < maxCols; i++)
+                        {
+                            if (boardMap[row][col] != boardMap[i][col])
+                            {
                                 break;
                             }
 
-                            if (i == maxCols - 1){
-                                returnValue;
+                            if (i == maxCols - 1)
+                            {
+                                return returnValue;
                             }
                         }
-                    }                    
+                    }
                 }
             }
         }
@@ -314,10 +318,10 @@ int main()
     Board _board(players);
 
     _board.promptWelcome();
+    _board.displayBoard();
 
     while (!_board.getGameOver())
     {
-        _board.displayBoard();
         _board.promptPlayer();
     }
     return 0;
